@@ -1,0 +1,936 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Nagrik Sahayak — Digital Citizen Assistant</title>
+<style>
+  :root{
+    --navy:#0b2447;
+    --navy2:#14375e;
+    --saffron:#ff9933;
+    --green:#138808;
+    --bg:#f4f7fb;
+    --card:#ffffff;
+    --text:#1a1a1a;
+    --muted:#5c6b7a;
+    --danger:#c62828;
+    --safe:#1b7a3d;
+    --warn:#b8860b;
+    --radius:14px;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    font-family:'Segoe UI', 'Noto Sans Devanagari', 'Noto Sans Tamil', Arial, sans-serif;
+    background:var(--bg);
+    color:var(--text);
+  }
+  header{
+    background:linear-gradient(135deg,var(--navy),var(--navy2));
+    color:#fff;
+    padding:18px 24px;
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    flex-wrap:wrap;
+    gap:12px;
+  }
+  header .brand{display:flex;align-items:center;gap:10px;}
+  header .brand .flag-strip{width:6px;height:36px;border-radius:3px;
+    background:linear-gradient(var(--saffron),#fff 45%,var(--green));}
+  header h1{font-size:1.25rem;margin:0;}
+  header p{margin:2px 0 0;font-size:.8rem;color:#cdd8e6;}
+  select#langSwitch{
+    padding:8px 12px;border-radius:8px;border:none;background:#fff;color:var(--navy);
+    font-weight:600;cursor:pointer;
+  }
+  main{max-width:960px;margin:0 auto;padding:24px 16px 80px;}
+  .hero{
+    background:var(--card);
+    border-radius:var(--radius);
+    padding:24px;
+    box-shadow:0 2px 10px rgba(0,0,0,.06);
+    margin-bottom:20px;
+  }
+  .hero h2{margin-top:0;font-size:1.3rem;color:var(--navy);}
+  .hero p{color:var(--muted);}
+  .search-row{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px;}
+  .search-row input[type=text]{
+    flex:1;min-width:200px;padding:12px 14px;border-radius:10px;border:1px solid #d3dbe4;font-size:1rem;
+  }
+  button{
+    cursor:pointer;border:none;border-radius:10px;padding:12px 16px;font-size:.95rem;font-weight:600;
+  }
+  .btn-primary{background:var(--navy);color:#fff;}
+  .btn-primary:hover{background:var(--navy2);}
+  .btn-mic{background:var(--saffron);color:#fff;font-size:1.1rem;padding:12px 14px;}
+  .btn-mic.listening{background:var(--danger);animation:pulse 1s infinite;}
+  @keyframes pulse{0%{opacity:1;}50%{opacity:.55;}100%{opacity:1;}}
+  section.card{
+    background:var(--card);
+    border-radius:var(--radius);
+    padding:22px;
+    box-shadow:0 2px 10px rgba(0,0,0,.06);
+    margin-bottom:20px;
+  }
+  section.card h3{margin-top:0;color:var(--navy);}
+  .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;margin-top:8px;}
+  .field label{display:block;font-size:.82rem;color:var(--muted);margin-bottom:4px;font-weight:600;}
+  .field input, .field select{
+    width:100%;padding:10px;border-radius:8px;border:1px solid #d3dbe4;font-size:.95rem;background:#fff;
+  }
+  .checkbox-row{display:flex;align-items:center;gap:8px;margin-top:6px;}
+  .actions{margin-top:16px;}
+  .results{margin-top:18px;display:flex;flex-direction:column;gap:14px;}
+  .scheme-card{
+    border:1px solid #e3e9f0;border-left:5px solid var(--saffron);border-radius:10px;padding:16px;background:#fbfcfe;
+  }
+  .scheme-card h4{margin:0 0 4px;color:var(--navy);display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap;}
+  .scheme-card .cat-tag{font-size:.7rem;background:var(--navy);color:#fff;padding:3px 8px;border-radius:20px;font-weight:600;}
+  .scheme-card .desc{color:#333;margin:6px 0;}
+  .scheme-card .meta{font-size:.85rem;color:var(--muted);margin:4px 0;}
+  .scheme-card .row-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px;}
+  .btn-small{padding:8px 12px;font-size:.82rem;}
+  .btn-outline{background:#fff;border:1px solid var(--navy);color:var(--navy);}
+  .btn-link{background:var(--green);color:#fff;text-decoration:none;display:inline-block;}
+  .fraud-result{margin-top:14px;padding:14px;border-radius:10px;font-weight:600;}
+  .fraud-safe{background:#e6f6ea;color:var(--safe);border:1px solid #b6e6c3;}
+  .fraud-danger{background:#fdecea;color:var(--danger);border:1px solid #f3c2bd;}
+  .fraud-warn{background:#fff7e0;color:var(--warn);border:1px solid #f0e0a8;}
+  footer{text-align:center;padding:20px;color:var(--muted);font-size:.8rem;}
+  .empty-state{color:var(--muted);font-style:italic;}
+  .badge-ai{display:inline-block;background:linear-gradient(90deg,#6a5ae0,#4a90d9);color:#fff;font-size:.68rem;padding:3px 8px;border-radius:20px;margin-left:8px;vertical-align:middle;}
+  .disclaimer{font-size:.75rem;color:var(--muted);margin-top:10px;}
+
+  @media (max-width: 600px){
+    header{padding:14px 16px;}
+    header h1{font-size:1.05rem;}
+    header p{font-size:.72rem;}
+    main{padding:16px 10px 60px;}
+    .hero, section.card{padding:16px;}
+    .hero h2{font-size:1.1rem;}
+    .search-row{flex-direction:column;}
+    .search-row input[type=text]{width:100%;}
+    .search-row button{width:100%;}
+    .grid{grid-template-columns:1fr;}
+    .scheme-card h4{flex-direction:column;align-items:flex-start;}
+    .row-actions{width:100%;}
+    .row-actions .btn-small{flex:1;text-align:center;}
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="brand">
+    <div class="flag-strip"></div>
+    <div>
+      <h1 id="siteTitle">Nagrik Sahayak</h1>
+      <p id="siteSubtitle">Digital Citizen Assistant — Decode SIH 2026</p>
+    </div>
+  </div>
+  <select id="langSwitch">
+    <option value="en">English</option>
+    <option value="hi">हिंदी</option>
+    <option value="mr">मराठी</option>
+    <option value="ta">தமிழ்</option>
+  </select>
+</header>
+
+<main>
+
+  <section class="hero">
+    <h2 id="heroHeading">Find government schemes you're eligible for — in your language <span class="badge-ai">AI Assistant</span></h2>
+    <p id="heroSub">Speak or type what you need (e.g. "farmer subsidy", "girl child scheme", "disability support").</p>
+    <div class="search-row">
+      <input type="text" id="searchInput" placeholder="Type or speak your need...">
+      <button class="btn-mic" id="micBtn" title="Speak">🎤</button>
+      <button class="btn-primary" id="searchBtn">Search</button>
+    </div>
+    <div id="micStatus" class="disclaimer" style="color:var(--danger);"></div>
+    <div id="searchResults" class="results"></div>
+  </section>
+
+  <section class="card">
+    <h3 id="eligHeading">Check schemes for your exact profile</h3>
+    <div class="grid">
+      <div class="field">
+        <label id="lblAge">Age</label>
+        <input type="number" id="ageInput" min="0" max="120" placeholder="e.g. 34">
+      </div>
+      <div class="field">
+        <label id="lblIncome">Annual family income (₹)</label>
+        <input type="number" id="incomeInput" min="0" placeholder="e.g. 150000">
+      </div>
+      <div class="field">
+        <label id="lblGender">Gender</label>
+        <select id="genderInput">
+          <option value="any">--</option>
+          <option value="female">Female</option>
+          <option value="male">Male</option>
+          <option value="other">Other</option>
+        </select>
+      </div>
+      <div class="field">
+        <label id="lblOccupation">Occupation</label>
+        <select id="occupationInput">
+          <option value="any">--</option>
+          <option value="farmer">Farmer</option>
+          <option value="unorganized_worker">Unorganized sector worker</option>
+          <option value="student">Student</option>
+          <option value="entrepreneur">Entrepreneur / self-employed</option>
+          <option value="artisan">Artisan / craftsperson</option>
+          <option value="unemployed">Unemployed</option>
+          <option value="other">Other</option>
+        </select>
+      </div>
+      <div class="field">
+        <label id="lblCategory">Social category</label>
+        <select id="categoryInput">
+          <option value="any">--</option>
+          <option value="general">General</option>
+          <option value="obc">OBC</option>
+          <option value="sc">SC</option>
+          <option value="st">ST</option>
+        </select>
+      </div>
+      <div class="field">
+        <label id="lblSector">Area</label>
+        <select id="sectorInput">
+          <option value="any">--</option>
+          <option value="rural">Rural</option>
+          <option value="urban">Urban</option>
+        </select>
+      </div>
+    </div>
+    <div class="checkbox-row">
+      <input type="checkbox" id="disabilityInput">
+      <label id="lblDisability" for="disabilityInput">I am a person with disability</label>
+    </div>
+    <div class="actions">
+      <button class="btn-primary" id="checkEligibilityBtn">Check my eligible schemes</button>
+    </div>
+    <div id="eligResults" class="results"></div>
+  </section>
+
+  <section class="card">
+    <h3 id="nearbyHeading">📍 Nearby Government Services</h3>
+    <p id="nearbySub" class="disclaimer">Find banks, post offices, and government offices near you.</p>
+    <div class="checkbox-row" style="flex-wrap:wrap;gap:16px;">
+      <span><input type="checkbox" id="catBankInput" checked> <label id="lblCatBank" for="catBankInput">Banks</label></span>
+      <span><input type="checkbox" id="catPostInput" checked> <label id="lblCatPost" for="catPostInput">Post Offices</label></span>
+      <span><input type="checkbox" id="catGovtInput" checked> <label id="lblCatGovt" for="catGovtInput">Government Offices</label></span>
+    </div>
+    <div class="actions">
+      <button class="btn-primary" id="findNearMeBtn">📍 Find Near Me</button>
+    </div>
+    <div id="nearbyStatus" class="disclaimer"></div>
+    <div id="nearbyResults" class="results"></div>
+    <p class="disclaimer" id="aadhaarNote">Looking for an Aadhaar enrolment/update center? Use the official UIDAI locator for verified centers.
+      <a id="aadhaarLink" href="https://appointments.uidai.gov.in/easearch.aspx" target="_blank" rel="noopener">Find Aadhaar Center (UIDAI) ↗</a>
+    </p>
+  </section>
+
+  <section class="card">
+    <h3 id="fraudHeading">🛡️ Scam / Fraud Checker</h3>
+    <p id="fraudSub" class="disclaimer">Paste a website link or scheme name someone sent you, to check if it looks official.</p>
+    <div class="search-row">
+      <input type="text" id="fraudInput" placeholder="e.g. www.pmkisan-yojana-claim.in">
+      <button class="btn-primary" id="fraudBtn">Check</button>
+    </div>
+    <div id="fraudResult"></div>
+  </section>
+
+</main>
+
+<footer id="footerText">
+  Data sourced from myscheme.gov.in and official ministry pages. Always verify final details on the official scheme website before applying. Built for Decode SIH 2026 — Team OG: Shivansh Gupta, Shivang Upadhyay, Navya Jauhri, Shivam Singh.
+</footer>
+
+<script>
+/* ============ SCHEME DATASET ============
+   Real, well-known Indian government schemes. Benefit amounts / thresholds
+   are approximate — verify current figures on myscheme.gov.in before final
+   submission, since these are periodically revised by the government. */
+const SCHEMES = [
+  {
+    id:"pmkisan", name:"PM-KISAN (Pradhan Mantri Kisan Samman Nidhi)", category:"Agriculture",
+    tags:["farmer","kisan","agriculture","land","income support","cultivator"],
+    description:"Income support of ₹6,000/year (in 3 installments) to landholding farmer families.",
+    benefits:"₹6,000 per year, directly transferred in 3 installments of ₹2,000.",
+    documents:["Aadhaar card","Land ownership records","Bank account (Aadhaar-linked)"],
+    link:"https://pmkisan.gov.in",
+    criteria:{minAge:18,maxAge:null,maxIncome:null,gender:"any",occupation:["farmer"],disability:false,category:"any",sector:"any"}
+  },
+  {
+    id:"ayushman", name:"Ayushman Bharat – PM Jan Arogya Yojana (PM-JAY)", category:"Health",
+    tags:["health","hospital","insurance","medical","treatment","senior citizen"],
+    description:"Health cover of ₹5 lakh/year per family for secondary & tertiary hospitalization. Since 2024, ALL senior citizens aged 70+ are covered free, regardless of income — as a separate top-up on top of any existing family cover.",
+    benefits:"Cashless treatment up to ₹5,00,000 per family per year at empanelled hospitals. 70+ citizens get an additional personal ₹5,00,000 top-up, irrespective of income.",
+    documents:["Aadhaar card","Ration card / family ID","Income certificate (if applicable, not needed for 70+)"],
+    link:"https://pmjay.gov.in",
+    criteria:{minAge:0,maxAge:null,maxIncome:null,gender:"any",occupation:["any"],disability:false,category:"any",sector:"any"}
+  },
+  {
+    id:"pmay-g", name:"Pradhan Mantri Awas Yojana – Gramin (PMAY-G)", category:"Housing",
+    tags:["housing","home","house","pucca","shelter","rural","village"],
+    description:"Direct financial assistance for rural houseless / kutcha-house families to build a pucca house.",
+    benefits:"₹1.2 lakh (plain areas) / ₹1.3 lakh (hilly, difficult, IAP districts) direct assistance, plus MGNREGA labour convergence.",
+    documents:["Aadhaar card","Income proof","Proof of no existing pucca house","Job card (if available)"],
+    link:"https://pmayg.nic.in",
+    criteria:{minAge:18,maxAge:null,maxIncome:null,gender:"any",occupation:["any"],disability:false,category:"any",sector:"rural"}
+  },
+  {
+    id:"pmay-u", name:"Pradhan Mantri Awas Yojana – Urban 2.0 (PMAY-U 2.0)", category:"Housing",
+    tags:["housing","home","house","pucca","shelter","urban","city","home loan"],
+    description:"Interest subsidy on home loans for urban EWS/LIG/MIG families to buy, build, or rent affordable housing (2024–2029 scheme).",
+    benefits:"4% interest subsidy, up to ₹1.8 lakh total, on the first ₹8 lakh of a home loan (loan up to ₹25 lakh, property value up to ₹35 lakh).",
+    documents:["Aadhaar card","Income proof","Bank loan sanction letter","Property documents"],
+    link:"https://pmaymis.gov.in",
+    criteria:{minAge:18,maxAge:null,maxIncome:900000,gender:"any",occupation:["any"],disability:false,category:"any",sector:"urban"}
+  },
+  {
+    id:"nsp", name:"National Scholarship Portal Schemes", category:"Education",
+    tags:["student","scholarship","education","study","school","college"],
+    description:"Merit-cum-means scholarships for school and college students from low-income families.",
+    benefits:"Tuition fee reimbursement and maintenance allowance (varies by scheme).",
+    documents:["Aadhaar card","Income certificate","Previous mark sheet","Bank account"],
+    link:"https://scholarships.gov.in",
+    criteria:{minAge:5,maxAge:35,maxIncome:250000,gender:"any",occupation:["student"],disability:false,category:"any",sector:"any"}
+  },
+  {
+    id:"ssy", name:"Sukanya Samriddhi Yojana", category:"Women & Child",
+    tags:["girl child","daughter","savings","education","marriage"],
+    description:"Small savings scheme for the financial security of a girl child, opened before age 10.",
+    benefits:"High interest rate savings account maturing at girl's marriage/higher education age.",
+    documents:["Girl child's birth certificate","Aadhaar of parent/guardian","Bank/post office KYC"],
+    link:"https://www.india.gov.in/spotlight/sukanya-samriddhi-yojana",
+    criteria:{minAge:0,maxAge:10,maxIncome:null,gender:"female",occupation:["any"],disability:false,category:"any",sector:"any"}
+  },
+  {
+    id:"ujjwala", name:"Pradhan Mantri Ujjwala Yojana", category:"Women & Child",
+    tags:["lpg","gas connection","cooking","women","bpl"],
+    description:"Free LPG gas connection for women from BPL / low-income households.",
+    benefits:"Free LPG connection with first refill and stove support.",
+    documents:["Aadhaar card","BPL / income proof","Bank account"],
+    link:"https://pmuy.gov.in",
+    criteria:{minAge:18,maxAge:null,maxIncome:200000,gender:"female",occupation:["any"],disability:false,category:"any",sector:"any"}
+  },
+  {
+    id:"apy", name:"Atal Pension Yojana", category:"Employment & Pension",
+    tags:["pension","unorganized worker","old age","retirement"],
+    description:"Guaranteed monthly pension (₹1,000–₹5,000) after age 60 for unorganized sector workers.",
+    benefits:"Fixed monthly pension after 60, based on contribution amount.",
+    documents:["Aadhaar card","Bank account","Mobile number"],
+    link:"https://npscra.nsdl.co.in/scheme-details.php",
+    criteria:{minAge:18,maxAge:40,maxIncome:null,gender:"any",occupation:["unorganized_worker","farmer","other"],disability:false,category:"any",sector:"any"}
+  },
+  {
+    id:"pmegp", name:"PM Employment Generation Programme (PMEGP)", category:"Employment & Pension",
+    tags:["business","loan","entrepreneur","self employment","startup"],
+    description:"Subsidized loans to set up new micro-enterprises for self-employment.",
+    benefits:"Bank loan with 15–35% government subsidy (margin money).",
+    documents:["Aadhaar card","Project report","Educational certificate (8th pass min.)"],
+    link:"https://www.kviconline.gov.in/pmegpeportal",
+    criteria:{minAge:18,maxAge:null,maxIncome:null,gender:"any",occupation:["entrepreneur","unemployed"],disability:false,category:"any",sector:"any"}
+  },
+  {
+    id:"standup", name:"Stand-Up India", category:"Employment & Pension",
+    tags:["sc","st","women","business loan","entrepreneur"],
+    description:"Bank loans between ₹10 lakh–₹1 crore for SC/ST and women entrepreneurs for greenfield enterprises.",
+    benefits:"Composite loan covering 75% of the project cost.",
+    documents:["Aadhaar card","Caste certificate (if applicable)","Business plan"],
+    link:"https://www.standupmitra.in",
+    criteria:{minAge:18,maxAge:null,maxIncome:null,gender:"any",occupation:["entrepreneur"],disability:false,category:"sc_st_or_women",sector:"any"}
+  },
+  {
+    id:"nsap", name:"National Social Assistance Programme (NSAP)", category:"Employment & Pension",
+    tags:["old age pension","widow pension","disability pension","bpl"],
+    description:"Monthly pension support for elderly, widows, and persons with disability from BPL households.",
+    benefits:"₹200/month (age 60–79) or ₹500/month (80+) from the Centre, topped up by states — average total around ₹1,000/month in most states.",
+    documents:["Aadhaar card","Age/widow/disability proof","BPL card"],
+    link:"https://nsap.nic.in",
+    criteria:{minAge:18,maxAge:null,maxIncome:150000,gender:"any",occupation:["any"],disability:false,category:"any",sector:"any"}
+  },
+  {
+    id:"pmmvy", name:"PM Matru Vandana Yojana", category:"Women & Child",
+    tags:["pregnant","maternity","mother","child birth"],
+    description:"Cash incentive for pregnant and lactating women — ₹5,000 for the first living child, plus ₹6,000 more if the second child is a girl.",
+    benefits:"₹5,000 (in 2 installments) for the 1st child; additional ₹6,000 (1 installment) for a 2nd child if she's a girl.",
+    documents:["Aadhaar card","MCP card","Bank account"],
+    link:"https://pmmvy.wcd.gov.in",
+    criteria:{minAge:18,maxAge:45,maxIncome:null,gender:"female",occupation:["any"],disability:false,category:"any",sector:"any"}
+  },
+  {
+    id:"adip", name:"ADIP Scheme (Assistance to Disabled Persons)", category:"Disability",
+    tags:["disability","divyang","aids","wheelchair","hearing aid"],
+    description:"Free/subsidized assistive devices (wheelchairs, hearing aids, artificial limbs) for persons with disabilities.",
+    benefits:"Free or subsidized assistive aids and appliances.",
+    documents:["Disability certificate","Aadhaar card","Income certificate"],
+    link:"https://disabilityaffairs.gov.in",
+    criteria:{minAge:0,maxAge:null,maxIncome:300000,gender:"any",occupation:["any"],disability:true,category:"any",sector:"any"}
+  },
+  {
+    id:"pmfby", name:"PM Fasal Bima Yojana", category:"Agriculture",
+    tags:["farmer","crop insurance","agriculture","natural disaster"],
+    description:"Crop insurance covering losses from natural calamities, pests, and disease.",
+    benefits:"Low-premium crop insurance with claim payout on crop loss.",
+    documents:["Aadhaar card","Land records","Bank account","Sowing certificate"],
+    link:"https://pmfby.gov.in",
+    criteria:{minAge:18,maxAge:null,maxIncome:null,gender:"any",occupation:["farmer"],disability:false,category:"any",sector:"any"}
+  },
+  {
+    id:"jandhan", name:"PM Jan Dhan Yojana", category:"Financial Inclusion",
+    tags:["bank account","zero balance","financial inclusion"],
+    description:"Zero-balance bank account with RuPay debit card and accident insurance cover.",
+    benefits:"Free bank account, RuPay card, ₹1–2 lakh accident insurance, overdraft facility.",
+    documents:["Aadhaar card","Address proof"],
+    link:"https://pmjdy.gov.in",
+    criteria:{minAge:10,maxAge:null,maxIncome:null,gender:"any",occupation:["any"],disability:false,category:"any",sector:"any"}
+  },
+  {
+    id:"pmsby", name:"PM Suraksha Bima Yojana", category:"Insurance",
+    tags:["accident insurance","low premium insurance"],
+    description:"Accidental death/disability insurance cover of ₹2 lakh at ₹20/year premium (revised June 2025).",
+    benefits:"₹2,00,000 cover for accidental death/full disability; ₹1,00,000 for partial disability.",
+    documents:["Aadhaar card","Bank account"],
+    link:"https://jansuraksha.gov.in",
+    criteria:{minAge:18,maxAge:70,maxIncome:null,gender:"any",occupation:["any"],disability:false,category:"any",sector:"any"}
+  },
+  {
+    id:"pmjjby", name:"PM Jeevan Jyoti Bima Yojana", category:"Insurance",
+    tags:["life insurance","low premium insurance"],
+    description:"Life insurance cover of ₹2 lakh on death by any cause, at ₹436/year premium (revised June 2025).",
+    benefits:"₹2,00,000 life cover for the nominee.",
+    documents:["Aadhaar card","Bank account"],
+    link:"https://jansuraksha.gov.in",
+    criteria:{minAge:18,maxAge:50,maxIncome:null,gender:"any",occupation:["any"],disability:false,category:"any",sector:"any"}
+  },
+  {
+    id:"eshram", name:"e-Shram Card", category:"Employment & Pension",
+    tags:["unorganized worker","daily wage","labour","registration","social security"],
+    description:"National database registration for unorganized workers, unlocking social security benefits & accident insurance.",
+    benefits:"₹2 lakh accident insurance cover, access to future welfare schemes.",
+    documents:["Aadhaar card","Bank account","Mobile number"],
+    link:"https://eshram.gov.in",
+    criteria:{minAge:16,maxAge:59,maxIncome:null,gender:"any",occupation:["unorganized_worker","farmer","other"],disability:false,category:"any",sector:"any"}
+  },
+  {
+    id:"vishwakarma", name:"PM Vishwakarma Yojana", category:"Employment & Pension",
+    tags:["artisan","craftsperson","carpenter","weaver","toolkit","traditional trade"],
+    description:"Support for traditional artisans and craftspeople — toolkit incentive, skill training, and collateral-free loans.",
+    benefits:"Toolkit incentive up to ₹15,000, loans up to ₹3 lakh at concessional rates.",
+    documents:["Aadhaar card","Trade proof / self-declaration"],
+    link:"https://pmvishwakarma.gov.in",
+    criteria:{minAge:18,maxAge:null,maxIncome:null,gender:"any",occupation:["artisan"],disability:false,category:"any",sector:"any"}
+  }
+];
+
+/* ============ LIVE SCHEME DATA (Supabase via Render backend) ============
+   SCHEMES above is the offline fallback — it's kept so the app works even
+   if the backend is unreachable (bad wifi on demo day, Render cold start,
+   etc). On load we try to fetch the latest data from the backend API and,
+   if that succeeds, replace the contents of SCHEMES in place so every
+   function that already references SCHEMES (scoreByKeyword, matchByProfile)
+   automatically uses the fresh data with zero other code changes. */
+const BACKEND_URL = "https://nagrik-sahayak-backend.onrender.com"; // update after Render deploy
+async function loadSchemesFromBackend(){
+  try{
+    const res = await fetch(BACKEND_URL + "/api/schemes");
+    if(!res.ok) throw new Error("HTTP " + res.status);
+    const data = await res.json();
+    if(Array.isArray(data) && data.length > 0){
+      SCHEMES.length = 0;
+      SCHEMES.push(...data);
+      console.log("Loaded", data.length, "schemes from backend.");
+    }
+  }catch(err){
+    console.warn("Backend unreachable, using built-in offline scheme data:", err.message);
+  }
+}
+
+/* ============ TRANSLATIONS ============ */
+const I18N = {
+  en:{
+    siteTitle:"Nagrik Sahayak", siteSubtitle:"Digital Citizen Assistant — Decode SIH 2026",
+    heroHeading:"Find government schemes you're eligible for — in your language",
+    heroSub:"Speak or type what you need (e.g. \"farmer subsidy\", \"girl child scheme\", \"disability support\").",
+    searchPh:"Type or speak your need...", searchBtn:"Search",
+    eligHeading:"Check schemes for your exact profile",
+    lblAge:"Age", lblIncome:"Annual family income (₹)", lblGender:"Gender",
+    lblOccupation:"Occupation", lblCategory:"Social category", lblSector:"Area",
+    lblDisability:"I am a person with disability", checkBtn:"Check my eligible schemes",
+    fraudHeading:"🛡️ Scam / Fraud Checker",
+    fraudSub:"Paste a website link or scheme name someone sent you, to check if it looks official.",
+    fraudPh:"e.g. www.pmkisan-yojana-claim.in", fraudBtn:"Check",
+    noResults:"No matching schemes found. Try adjusting your details.",
+    benefits:"Benefits", documents:"Documents needed", official:"Official site", listen:"🔊 Listen",
+    footer:"Data sourced from myscheme.gov.in and official ministry pages. Always verify final details on the official scheme website before applying. Built for Decode SIH 2026 — Team OG: Shivansh Gupta, Shivang Upadhyay, Navya Jauhri, Shivam Singh.",
+    fraudSafeMsg:"This looks like an official government domain.",
+    fraudDangerMsg:"⚠ This looks suspicious — likely NOT an official government site. Do not pay any 'fee' or share OTP/bank details.",
+    fraudWarnMsg:"Could not confirm this is official. Verify only via gov.in / nic.in domains or myscheme.gov.in before proceeding.",
+    nearbyHeading:"📍 Nearby Government Services", nearbySub:"Find banks, post offices, and government offices near you.",
+    catBank:"Banks", catPost:"Post Offices", catGovt:"Government Offices",
+    findNearMeBtn:"Find Near Me", locatingMsg:"Finding your location...", searchingMsg:"Looking for nearby services...",
+    noNearbyResults:"No services found nearby. Try a different category, or check your location settings.",
+    distanceLabel:"away", directionsLabel:"Directions ↗",
+    aadhaarNote:"Looking for an Aadhaar enrolment/update center? Use the official UIDAI locator for verified centers.",
+    aadhaarLinkLabel:"Find Aadhaar Center (UIDAI) ↗",
+    permissionDeniedMsg:"Location access denied. Please allow location access in your browser to find nearby services.",
+    geoNotSupportedMsg:"Location isn't supported in this browser."
+  },
+  hi:{
+    siteTitle:"नागरिक सहायक", siteSubtitle:"डिजिटल नागरिक सहायक — Decode SIH 2026",
+    heroHeading:"अपनी भाषा में पात्र सरकारी योजनाएँ खोजें",
+    heroSub:"बोलें या टाइप करें कि आपको क्या चाहिए (जैसे \"किसान सब्सिडी\", \"बेटी की योजना\", \"दिव्यांग सहायता\")।",
+    searchPh:"अपनी ज़रूरत टाइप या बोलें...", searchBtn:"खोजें",
+    eligHeading:"अपनी प्रोफ़ाइल के अनुसार योजनाएँ जाँचें",
+    lblAge:"उम्र", lblIncome:"वार्षिक पारिवारिक आय (₹)", lblGender:"लिंग",
+    lblOccupation:"व्यवसाय", lblCategory:"सामाजिक वर्ग", lblSector:"क्षेत्र",
+    lblDisability:"मैं दिव्यांग हूँ", checkBtn:"मेरी पात्र योजनाएँ जाँचें",
+    fraudHeading:"🛡️ धोखाधड़ी जाँचकर्ता",
+    fraudSub:"किसी वेबसाइट लिंक या योजना का नाम पेस्ट करें, यह जाँचने के लिए कि वह असली है या नहीं।",
+    fraudPh:"उदाहरण: www.pmkisan-yojana-claim.in", fraudBtn:"जाँचें",
+    noResults:"कोई मेल खाती योजना नहीं मिली। अपनी जानकारी बदलकर देखें।",
+    benefits:"लाभ", documents:"आवश्यक दस्तावेज़", official:"आधिकारिक वेबसाइट", listen:"🔊 सुनें",
+    footer:"डेटा myscheme.gov.in और आधिकारिक मंत्रालय पृष्ठों से लिया गया है। आवेदन करने से पहले आधिकारिक वेबसाइट पर विवरण अवश्य जाँचें। Decode SIH 2026 के लिए बनाया गया — टीम OG: शिवांश गुप्ता, शिवांग उपाध्याय, नव्या जौहरी, शिवम सिंह।",
+    fraudSafeMsg:"यह एक आधिकारिक सरकारी डोमेन जैसा प्रतीत होता है।",
+    fraudDangerMsg:"⚠ यह संदिग्ध लगता है — यह आधिकारिक सरकारी साइट नहीं लगती। कोई 'फीस' न दें और OTP/बैंक जानकारी साझा न करें।",
+    fraudWarnMsg:"यह पुष्टि नहीं हो सकी कि यह आधिकारिक है। आगे बढ़ने से पहले केवल gov.in / nic.in या myscheme.gov.in से जाँचें।",
+    nearbyHeading:"📍 आस-पास की सरकारी सेवाएँ", nearbySub:"अपने आस-पास बैंक, डाकघर और सरकारी कार्यालय खोजें।",
+    catBank:"बैंक", catPost:"डाकघर", catGovt:"सरकारी कार्यालय",
+    findNearMeBtn:"मेरे पास खोजें", locatingMsg:"आपकी लोकेशन पता की जा रही है...", searchingMsg:"आस-पास की सेवाएँ खोजी जा रही हैं...",
+    noNearbyResults:"आस-पास कोई सेवा नहीं मिली। दूसरी श्रेणी आज़माएँ या लोकेशन सेटिंग जाँचें।",
+    distanceLabel:"दूर", directionsLabel:"रास्ता दिखाएँ ↗",
+    aadhaarNote:"आधार बनवाने/अपडेट करने का केंद्र ढूँढ रहे हैं? सत्यापित केंद्रों के लिए आधिकारिक UIDAI लोकेटर का उपयोग करें।",
+    aadhaarLinkLabel:"आधार केंद्र खोजें (UIDAI) ↗",
+    permissionDeniedMsg:"लोकेशन एक्सेस अस्वीकृत। आस-पास की सेवाएँ खोजने के लिए कृपया ब्राउज़र में लोकेशन एक्सेस दें।",
+    geoNotSupportedMsg:"इस ब्राउज़र में लोकेशन सुविधा उपलब्ध नहीं है।"
+  },
+  mr:{
+    siteTitle:"नागरिक सहाय्यक", siteSubtitle:"डिजिटल नागरिक सहाय्यक — Decode SIH 2026",
+    heroHeading:"तुमच्या भाषेत पात्र सरकारी योजना शोधा",
+    heroSub:"तुम्हाला काय हवे आहे ते बोला किंवा टाइप करा (उदा. \"शेतकरी अनुदान\", \"मुलींसाठीची योजना\", \"दिव्यांग सहाय्य\").",
+    searchPh:"तुमची गरज टाइप किंवा बोला...", searchBtn:"शोधा",
+    eligHeading:"तुमच्या प्रोफाइलनुसार योजना तपासा",
+    lblAge:"वय", lblIncome:"वार्षिक कौटुंबिक उत्पन्न (₹)", lblGender:"लिंग",
+    lblOccupation:"व्यवसाय", lblCategory:"सामाजिक प्रवर्ग", lblSector:"क्षेत्र",
+    lblDisability:"मी दिव्यांग आहे", checkBtn:"माझ्या पात्र योजना तपासा",
+    fraudHeading:"🛡️ फसवणूक तपासक",
+    fraudSub:"एखादी वेबसाइट लिंक किंवा योजनेचे नाव पेस्ट करा, ती अधिकृत आहे का ते तपासण्यासाठी.",
+    fraudPh:"उदा. www.pmkisan-yojana-claim.in", fraudBtn:"तपासा",
+    noResults:"जुळणारी योजना सापडली नाही. तुमची माहिती बदलून पहा.",
+    benefits:"लाभ", documents:"आवश्यक कागदपत्रे", official:"अधिकृत संकेतस्थळ", listen:"🔊 ऐका",
+    footer:"डेटा myscheme.gov.in आणि अधिकृत मंत्रालय पानांवरून घेतला आहे. अर्ज करण्यापूर्वी अधिकृत संकेतस्थळावर तपशील तपासा. Decode SIH 2026 साठी तयार — टीम OG: शिवांश गुप्ता, शिवांग उपाध्याय, नव्या जौहरी, शिवम सिंह.",
+    fraudSafeMsg:"हे अधिकृत सरकारी डोमेनसारखे दिसते.",
+    fraudDangerMsg:"⚠ हे संशयास्पद वाटते — बहुधा अधिकृत सरकारी साइट नाही. कोणतीही 'फी' देऊ नका किंवा OTP/बँक माहिती शेअर करू नका.",
+    fraudWarnMsg:"हे अधिकृत आहे याची खात्री करता आली नाही. पुढे जाण्यापूर्वी फक्त gov.in / nic.in किंवा myscheme.gov.in वरून तपासा.",
+    nearbyHeading:"📍 जवळपासच्या सरकारी सेवा", nearbySub:"तुमच्या जवळचे बँक, पोस्ट ऑफिस आणि सरकारी कार्यालये शोधा.",
+    catBank:"बँक", catPost:"पोस्ट ऑफिस", catGovt:"सरकारी कार्यालये",
+    findNearMeBtn:"माझ्याजवळ शोधा", locatingMsg:"तुमचे लोकेशन शोधले जात आहे...", searchingMsg:"जवळपासच्या सेवा शोधल्या जात आहेत...",
+    noNearbyResults:"जवळपास कोणतीही सेवा आढळली नाही. दुसरी श्रेणी वापरून पहा किंवा लोकेशन सेटिंग तपासा.",
+    distanceLabel:"अंतरावर", directionsLabel:"दिशादर्शन ↗",
+    aadhaarNote:"आधार नोंदणी/अपडेट केंद्र शोधत आहात? सत्यापित केंद्रांसाठी अधिकृत UIDAI लोकेटर वापरा.",
+    aadhaarLinkLabel:"आधार केंद्र शोधा (UIDAI) ↗",
+    permissionDeniedMsg:"लोकेशन प्रवेश नाकारला. जवळपासच्या सेवा शोधण्यासाठी कृपया ब्राउझरमध्ये लोकेशन प्रवेश द्या.",
+    geoNotSupportedMsg:"या ब्राउझरमध्ये लोकेशन सुविधा उपलब्ध नाही."
+  },
+  ta:{
+    siteTitle:"குடிமக்கள் உதவியாளர்", siteSubtitle:"டிஜிட்டல் குடிமக்கள் உதவியாளர் — Decode SIH 2026",
+    heroHeading:"உங்கள் மொழியில் தகுதியான அரசு திட்டங்களைக் கண்டறியுங்கள்",
+    heroSub:"உங்களுக்கு தேவையானதை பேசவும் அல்லது தட்டச்சு செய்யவும் (எ.கா. \"விவசாயி மானியம்\", \"பெண் குழந்தை திட்டம்\", \"மாற்றுத்திறனாளி உதவி\").",
+    searchPh:"உங்கள் தேவையை தட்டச்சு செய்யவும் அல்லது பேசவும்...", searchBtn:"தேடு",
+    eligHeading:"உங்கள் விவரங்களுக்கான திட்டங்களை சரிபார்க்கவும்",
+    lblAge:"வயது", lblIncome:"ஆண்டு குடும்ப வருமானம் (₹)", lblGender:"பாலினம்",
+    lblOccupation:"தொழில்", lblCategory:"சமூக பிரிவு", lblSector:"பகுதி",
+    lblDisability:"நான் மாற்றுத்திறனாளி", checkBtn:"எனது தகுதியான திட்டங்களை சரிபார்க்கவும்",
+    fraudHeading:"🛡️ மோசடி சரிபார்ப்பு",
+    fraudSub:"ஒருவர் உங்களுக்கு அனுப்பிய இணையதள இணைப்பு அல்லது திட்டத்தின் பெயரை ஒட்டவும், அது உண்மையானதா என சரிபார்க்க.",
+    fraudPh:"எ.கா. www.pmkisan-yojana-claim.in", fraudBtn:"சரிபார்",
+    noResults:"பொருந்தும் திட்டங்கள் இல்லை. உங்கள் விவரங்களை மாற்றி முயற்சிக்கவும்.",
+    benefits:"நன்மைகள்", documents:"தேவையான ஆவணங்கள்", official:"அதிகாரப்பூர்வ இணையதளம்", listen:"🔊 கேளுங்கள்",
+    footer:"தரவு myscheme.gov.in மற்றும் அதிகாரப்பூர்வ அமைச்சக பக்கங்களில் இருந்து பெறப்பட்டது. விண்ணப்பிக்கும் முன் அதிகாரப்பூர்வ இணையதளத்தில் விவரங்களை சரிபார்க்கவும். Decode SIH 2026 க்காக உருவாக்கப்பட்டது — டீம் OG: சிவான்ஷ் குப்தா, சிவாங் உபாத்யாய், நவ்யா ஜௌஹ்ரி, சிவம் சிங்.",
+    fraudSafeMsg:"இது ஒரு அதிகாரப்பூர்வ அரசு டொமைன் போல் தெரிகிறது.",
+    fraudDangerMsg:"⚠ இது சந்தேகத்திற்குரியதாக தெரிகிறது — அதிகாரப்பூர்வ அரசு தளமாக இருக்காது. எந்த 'கட்டணமும்' கொடுக்க வேண்டாம், OTP/வங்கி விவரங்களை பகிர வேண்டாம்.",
+    fraudWarnMsg:"இது அதிகாரப்பூர்வமானது என உறுதிப்படுத்த முடியவில்லை. தொடர்வதற்கு முன் gov.in / nic.in அல்லது myscheme.gov.in மூலம் மட்டும் சரிபார்க்கவும்.",
+    nearbyHeading:"📍 அருகிலுள்ள அரசு சேவைகள்", nearbySub:"உங்களுக்கு அருகிலுள்ள வங்கிகள், அஞ்சல் அலுவலகங்கள் மற்றும் அரசு அலுவலகங்களைக் கண்டறியுங்கள்.",
+    catBank:"வங்கிகள்", catPost:"அஞ்சல் அலுவலகங்கள்", catGovt:"அரசு அலுவலகங்கள்",
+    findNearMeBtn:"எனக்கு அருகில் தேடு", locatingMsg:"உங்கள் இருப்பிடம் கண்டறியப்படுகிறது...", searchingMsg:"அருகிலுள்ள சேவைகள் தேடப்படுகின்றன...",
+    noNearbyResults:"அருகில் சேவைகள் எதுவும் இல்லை. வேறு வகையை முயற்சிக்கவும் அல்லது இருப்பிட அமைப்புகளைச் சரிபார்க்கவும்.",
+    distanceLabel:"தொலைவில்", directionsLabel:"வழி காட்டு ↗",
+    aadhaarNote:"ஆதார் பதிவு/புதுப்பிப்பு மையம் தேடுகிறீர்களா? சரிபார்க்கப்பட்ட மையங்களுக்கு அதிகாரப்பூர்வ UIDAI லொக்கேட்டரைப் பயன்படுத்தவும்.",
+    aadhaarLinkLabel:"ஆதார் மையம் தேடு (UIDAI) ↗",
+    permissionDeniedMsg:"இருப்பிட அணுகல் மறுக்கப்பட்டது. அருகிலுள்ள சேவைகளைக் கண்டறிய உங்கள் உலாவியில் இருப்பிட அணுகலை அனுமதிக்கவும்.",
+    geoNotSupportedMsg:"இந்த உலாவியில் இருப்பிடம் ஆதரிக்கப்படவில்லை."
+  }
+};
+
+const LOCALE_MAP = {en:"en-IN", hi:"hi-IN", mr:"mr-IN", ta:"ta-IN"};
+let currentLang = "en";
+
+function applyTranslations(){
+  const t = I18N[currentLang];
+  document.getElementById("siteTitle").textContent = t.siteTitle;
+  document.getElementById("siteSubtitle").textContent = t.siteSubtitle;
+  document.getElementById("heroHeading").innerHTML = t.heroHeading + ' <span class="badge-ai">AI Assistant</span>';
+  document.getElementById("heroSub").textContent = t.heroSub;
+  document.getElementById("searchInput").placeholder = t.searchPh;
+  document.getElementById("searchBtn").textContent = t.searchBtn;
+  document.getElementById("eligHeading").textContent = t.eligHeading;
+  document.getElementById("lblAge").textContent = t.lblAge;
+  document.getElementById("lblIncome").textContent = t.lblIncome;
+  document.getElementById("lblGender").textContent = t.lblGender;
+  document.getElementById("lblOccupation").textContent = t.lblOccupation;
+  document.getElementById("lblCategory").textContent = t.lblCategory;
+  document.getElementById("lblSector").textContent = t.lblSector;
+  document.getElementById("lblDisability").textContent = t.lblDisability;
+  document.getElementById("checkEligibilityBtn").textContent = t.checkBtn;
+  document.getElementById("fraudHeading").textContent = t.fraudHeading;
+  document.getElementById("fraudSub").textContent = t.fraudSub;
+  document.getElementById("fraudInput").placeholder = t.fraudPh;
+  document.getElementById("fraudBtn").textContent = t.fraudBtn;
+  document.getElementById("nearbyHeading").textContent = t.nearbyHeading;
+  document.getElementById("nearbySub").textContent = t.nearbySub;
+  document.getElementById("lblCatBank").textContent = t.catBank;
+  document.getElementById("lblCatPost").textContent = t.catPost;
+  document.getElementById("lblCatGovt").textContent = t.catGovt;
+  document.getElementById("findNearMeBtn").textContent = "📍 " + t.findNearMeBtn;
+  document.getElementById("aadhaarNote").childNodes[0].textContent = t.aadhaarNote + " ";
+  document.getElementById("aadhaarLink").textContent = t.aadhaarLinkLabel;
+  document.getElementById("footerText").textContent = t.footer;
+  document.title = t.siteTitle + " — Decode SIH 2026";
+}
+
+document.getElementById("langSwitch").addEventListener("change", (e)=>{
+  currentLang = e.target.value;
+  applyTranslations();
+});
+
+/* ============ SCHEME CARD RENDERING ============ */
+function renderSchemeCard(scheme){
+  const t = I18N[currentLang];
+  const div = document.createElement("div");
+  div.className = "scheme-card";
+  div.innerHTML = `
+    <h4>${scheme.name} <span class="cat-tag">${scheme.category}</span></h4>
+    <div class="desc">${scheme.description}</div>
+    <div class="meta"><strong>${t.benefits}:</strong> ${scheme.benefits}</div>
+    <div class="meta"><strong>${t.documents}:</strong> ${scheme.documents.join(", ")}</div>
+    <div class="row-actions">
+      <a class="btn-small btn-link" href="${scheme.link}" target="_blank" rel="noopener">${t.official} ↗</a>
+      <button class="btn-small btn-outline listen-btn">${t.listen}</button>
+    </div>
+  `;
+  div.querySelector(".listen-btn").addEventListener("click", ()=> speak(`${scheme.name}. ${scheme.description} ${scheme.benefits}`));
+  return div;
+}
+
+function renderResults(container, schemes){
+  const t = I18N[currentLang];
+  container.innerHTML = "";
+  if(schemes.length === 0){
+    container.innerHTML = `<div class="empty-state">${t.noResults}</div>`;
+    return;
+  }
+  schemes.forEach(s => container.appendChild(renderSchemeCard(s)));
+}
+
+/* ============ AI-STYLE FREE-TEXT SEARCH ============
+   Rule-based keyword matcher for demo reliability (no external API needed).
+   To upgrade to a real LLM: replace scoreByKeyword() below with a call to
+   your chosen LLM API (pass SCHEMES as context, ask it to rank + explain
+   matches), keeping this function's signature the same. */
+const SEARCH_STOPWORDS = new Set(["support","scheme","schemes","help","need","government","govt","yojana","for","the","and","of","a","an","to","in","my","me","i","am","is","want","give","find","please"]);
+
+function scoreByKeyword(query){
+  const q = query.toLowerCase();
+  const words = q.split(/\s+/).filter(w => w.length >= 3 && !SEARCH_STOPWORDS.has(w));
+  if(words.length === 0) return [];
+  return SCHEMES.map(s=>{
+    let score = 0;
+    words.forEach(w=>{
+      if(s.tags.some(tag=>tag === w)) score += 4;          // exact tag match
+      else if(s.tags.some(tag=>tag.includes(w))) score += 2; // partial tag match
+      if(s.name.toLowerCase().includes(w)) score += 3;
+      if(s.category.toLowerCase().includes(w)) score += 2;
+      if(s.description.toLowerCase().includes(w)) score += 1;
+    });
+    return {scheme:s, score};
+  }).filter(r=>r.score>0).sort((a,b)=>b.score-a.score).map(r=>r.scheme);
+}
+
+document.getElementById("searchBtn").addEventListener("click", ()=>{
+  const q = document.getElementById("searchInput").value.trim();
+  const container = document.getElementById("searchResults");
+  if(!q){ container.innerHTML=""; return; }
+  renderResults(container, scoreByKeyword(q).slice(0,6));
+});
+document.getElementById("searchInput").addEventListener("keydown",(e)=>{
+  if(e.key==="Enter") document.getElementById("searchBtn").click();
+});
+
+/* ============ ELIGIBILITY PROFILE MATCHER ============ */
+function matchByProfile(profile){
+  return SCHEMES.map(s=>{
+    const c = s.criteria;
+    // hard excludes
+    if(profile.age !== null){
+      if(c.minAge !== null && profile.age < c.minAge) return null;
+      if(c.maxAge !== null && profile.age > c.maxAge) return null;
+    }
+    if(profile.income !== null && c.maxIncome !== null && profile.income > c.maxIncome) return null;
+    if(c.gender !== "any" && profile.gender !== "any" && c.gender !== profile.gender) return null;
+    if(c.disability === true && profile.disability !== true) return null;
+    if(c.category === "sc_st_or_women" && profile.gender !== "female" &&
+       !(profile.category === "sc" || profile.category === "st")) return null;
+
+    // soft scoring — reward schemes that are specifically targeted at this profile
+    let score = 1;
+    if(c.occupation && !c.occupation.includes("any") && profile.occupation !== "any"){
+      if(c.occupation.includes(profile.occupation)) score += 3;
+    }
+    if(c.sector !== "any" && profile.sector !== "any" && c.sector === profile.sector) score += 1;
+    if(c.category !== "any" && c.category !== "sc_st_or_women" && profile.category !== "any" && c.category === profile.category) score += 1;
+    if(c.gender !== "any" && profile.gender !== "any" && c.gender === profile.gender) score += 2; // scheme explicitly targets this gender
+    if(c.disability === true && profile.disability === true) score += 3; // scheme explicitly for disability
+    if((c.minAge !== null || c.maxAge !== null) && profile.age !== null) score += 1; // age-targeted scheme, and user is within range (hard-checked above)
+    if(c.maxIncome !== null && profile.income !== null) score += 1; // income-targeted scheme, and user qualifies (hard-checked above)
+
+    return {scheme:s, score};
+  }).filter(Boolean).sort((a,b)=>b.score-a.score).map(r=>r.scheme);
+}
+
+document.getElementById("checkEligibilityBtn").addEventListener("click", ()=>{
+  const profile = {
+    age: document.getElementById("ageInput").value ? parseInt(document.getElementById("ageInput").value) : null,
+    income: document.getElementById("incomeInput").value ? parseInt(document.getElementById("incomeInput").value) : null,
+    gender: document.getElementById("genderInput").value,
+    occupation: document.getElementById("occupationInput").value,
+    category: document.getElementById("categoryInput").value,
+    sector: document.getElementById("sectorInput").value,
+    disability: document.getElementById("disabilityInput").checked
+  };
+  const container = document.getElementById("eligResults");
+  renderResults(container, matchByProfile(profile));
+});
+
+/* ============ FRAUD / SCAM CHECKER ============
+   Heuristic checker: whitelists official gov domains, flags common scam
+   patterns. This is a rules-based safety net for the demo — in production
+   you'd combine this with a live domain-reputation API. */
+const OFFICIAL_DOMAIN_PATTERNS = [/\.gov\.in$/i, /\.nic\.in$/i, /^myscheme\.gov\.in$/i];
+const SCAM_KEYWORDS = ["processing fee","guaranteed approval","click here to claim","limited time","pay now to receive","whatsapp link","urgent action required","otp share","lottery winner"];
+
+function extractDomain(input){
+  try{
+    let url = input.trim();
+    if(!/^https?:\/\//i.test(url)) url = "http://" + url;
+    const u = new URL(url);
+    return u.hostname.replace(/^www\./,"");
+  }catch(e){ return null; }
+}
+
+document.getElementById("fraudBtn").addEventListener("click", ()=>{
+  const t = I18N[currentLang];
+  const input = document.getElementById("fraudInput").value.trim();
+  const resultDiv = document.getElementById("fraudResult");
+  if(!input){ resultDiv.innerHTML = ""; return; }
+
+  const domain = extractDomain(input);
+  const lower = input.toLowerCase();
+  const hasScamKeyword = SCAM_KEYWORDS.some(k=>lower.includes(k));
+
+  let cls = "fraud-warn", msg = t.fraudWarnMsg;
+  if(domain && OFFICIAL_DOMAIN_PATTERNS.some(p=>p.test(domain)) && !hasScamKeyword){
+    cls = "fraud-safe"; msg = t.fraudSafeMsg + ` (${domain})`;
+  } else if(hasScamKeyword || (domain && !OFFICIAL_DOMAIN_PATTERNS.some(p=>p.test(domain)))){
+    cls = "fraud-danger"; msg = t.fraudDangerMsg;
+  }
+  resultDiv.innerHTML = `<div class="fraud-result ${cls}">${msg}</div>`;
+});
+
+/* ============ NEARBY GOVERNMENT SERVICES ============
+   Uses the browser's Geolocation API + the free OpenStreetMap Overpass API.
+   No API key needed, no cost, and location never leaves the browser except
+   as anonymous coordinates sent to the public Overpass endpoint for the
+   lookup itself (same as any map app). Aadhaar centers are deliberately
+   NOT pulled from OSM (the data isn't reliable/verified) — instead we link
+   out to the official UIDAI locator, matching the "trust official sources"
+   theme of the fraud checker above. */
+/* overpass-api.de does not reliably send CORS headers for browser fetch and
+   fails with "Failed to fetch" from client-side JS — verified by direct testing.
+   overpass.kumi.systems is a CORS-friendly public mirror; overpass-api.de is kept
+   as a fallback in case the primary mirror is ever down. */
+const OVERPASS_ENDPOINTS = [
+  "https://overpass.kumi.systems/api/interpreter",
+  "https://overpass-api.de/api/interpreter"
+];
+const SEARCH_RADIUS_M = 3000; // 3km
+
+function haversineKm(lat1, lon1, lat2, lon2){
+  const R = 6371;
+  const dLat = (lat2-lat1) * Math.PI/180;
+  const dLon = (lon2-lon1) * Math.PI/180;
+  const a = Math.sin(dLat/2)**2 + Math.cos(lat1*Math.PI/180)*Math.cos(lat2*Math.PI/180)*Math.sin(dLon/2)**2;
+  return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+}
+
+function buildOverpassQuery(lat, lon, categories){
+  const clauses = [];
+  if(categories.bank) clauses.push(`node["amenity"="bank"](around:${SEARCH_RADIUS_M},${lat},${lon});`);
+  if(categories.post) clauses.push(`node["amenity"="post_office"](around:${SEARCH_RADIUS_M},${lat},${lon});`);
+  if(categories.govt){
+    clauses.push(`node["office"="government"](around:${SEARCH_RADIUS_M},${lat},${lon});`);
+    clauses.push(`node["amenity"="townhall"](around:${SEARCH_RADIUS_M},${lat},${lon});`);
+  }
+  return `[out:json][timeout:25];(${clauses.join("")});out body;`;
+}
+
+function categoryLabelFor(tags, t){
+  if(tags.amenity === "bank") return t.catBank.replace(/s$/,"");
+  if(tags.amenity === "post_office") return t.catPost.replace(/s$/,"");
+  return t.catGovt.replace(/es$/,"").replace(/s$/,"");
+}
+
+function renderNearbyResults(elements, userLat, userLon){
+  const t = I18N[currentLang];
+  const container = document.getElementById("nearbyResults");
+  container.innerHTML = "";
+  if(elements.length === 0){
+    container.innerHTML = `<div class="empty-state">${t.noNearbyResults}</div>`;
+    return;
+  }
+  const withDistance = elements
+    .filter(el => el.tags && el.tags.name)
+    .map(el => ({ ...el, distKm: haversineKm(userLat, userLon, el.lat, el.lon) }))
+    .sort((a,b) => a.distKm - b.distKm)
+    .slice(0, 20);
+
+  withDistance.forEach(el=>{
+    const name = el.tags.name;
+    const label = categoryLabelFor(el.tags, t);
+    const addrParts = [el.tags["addr:street"], el.tags["addr:city"] || el.tags["addr:district"]].filter(Boolean);
+    const addr = addrParts.length ? addrParts.join(", ") : "";
+    const div = document.createElement("div");
+    div.className = "scheme-card";
+    div.innerHTML = `
+      <h4>${name} <span class="cat-tag">${label}</span></h4>
+      ${addr ? `<div class="desc">${addr}</div>` : ""}
+      <div class="meta">${el.distKm.toFixed(1)} km ${t.distanceLabel}</div>
+      <div class="row-actions">
+        <a class="btn-small btn-link" href="https://www.google.com/maps/dir/?api=1&destination=${el.lat},${el.lon}" target="_blank" rel="noopener">${t.directionsLabel}</a>
+      </div>
+    `;
+    container.appendChild(div);
+  });
+}
+
+document.getElementById("findNearMeBtn").addEventListener("click", ()=>{
+  const t = I18N[currentLang];
+  const statusEl = document.getElementById("nearbyStatus");
+  const resultsEl = document.getElementById("nearbyResults");
+  resultsEl.innerHTML = "";
+
+  if(!navigator.geolocation){
+    statusEl.textContent = t.geoNotSupportedMsg;
+    return;
+  }
+
+  const categories = {
+    bank: document.getElementById("catBankInput").checked,
+    post: document.getElementById("catPostInput").checked,
+    govt: document.getElementById("catGovtInput").checked
+  };
+
+  statusEl.textContent = t.locatingMsg;
+
+  navigator.geolocation.getCurrentPosition(async (position)=>{
+    const { latitude, longitude } = position.coords;
+    statusEl.textContent = t.searchingMsg;
+    const query = buildOverpassQuery(latitude, longitude, categories);
+    let data = null, lastErr = null;
+    for(const endpoint of OVERPASS_ENDPOINTS){
+      try{
+        const res = await fetch(endpoint, { method: "POST", body: "data=" + encodeURIComponent(query) });
+        if(!res.ok) throw new Error("HTTP " + res.status);
+        data = await res.json();
+        break; // success, stop trying further endpoints
+      }catch(err){
+        lastErr = err;
+      }
+    }
+    if(data){
+      statusEl.textContent = "";
+      renderNearbyResults(data.elements || [], latitude, longitude);
+    }else{
+      statusEl.textContent = t.noNearbyResults;
+    }
+  }, ()=>{
+    statusEl.textContent = t.permissionDeniedMsg;
+  });
+});
+
+/* ============ VOICE: SPEECH RECOGNITION (mic input) ============ */
+const SpeechRecognitionAPI = window.SpeechRecognition || window.webkitSpeechRecognition;
+let recognition = null;
+if(SpeechRecognitionAPI){
+  recognition = new SpeechRecognitionAPI();
+  recognition.continuous = false;
+  recognition.interimResults = false;
+}
+
+document.getElementById("micBtn").addEventListener("click", ()=>{
+  const micBtn = document.getElementById("micBtn");
+  const micStatus = document.getElementById("micStatus");
+  micStatus.textContent = "";
+  if(!recognition){
+    micStatus.textContent = "Voice input isn't supported in this browser. Try Google Chrome (Brave and some privacy browsers block this feature by default).";
+    return;
+  }
+  recognition.lang = LOCALE_MAP[currentLang] || "en-IN";
+  micBtn.classList.add("listening");
+  try{
+    recognition.start();
+  }catch(e){
+    // start() throws if recognition is already running from a previous click
+    micBtn.classList.remove("listening");
+    return;
+  }
+
+  recognition.onresult = (event)=>{
+    const transcript = event.results[0][0].transcript;
+    document.getElementById("searchInput").value = transcript;
+    document.getElementById("searchBtn").click();
+  };
+  recognition.onerror = (event)=>{
+    micBtn.classList.remove("listening");
+    const errorMessages = {
+      "not-allowed": "Microphone access was blocked. Allow microphone permission for this site in your browser settings and try again.",
+      "no-speech": "Didn't catch that — no speech detected. Try again.",
+      "audio-capture": "No microphone found. Check that a mic is connected and enabled.",
+      "network": "Voice recognition needs an internet connection. Check your connection and try again.",
+      "service-not-allowed": "Voice input is blocked by your browser (common in Brave/privacy browsers). Try Google Chrome instead."
+    };
+    micStatus.textContent = errorMessages[event.error] || ("Voice input error: " + event.error + ". Try Google Chrome if this persists.");
+  };
+  recognition.onend = ()=>{ micBtn.classList.remove("listening"); };
+});
+
+/* ============ VOICE: SPEECH SYNTHESIS (read aloud) ============ */
+function speak(text){
+  if(!window.speechSynthesis){ alert("Voice output isn't supported in this browser."); return; }
+  const utter = new SpeechSynthesisUtterance(text);
+  utter.lang = LOCALE_MAP[currentLang] || "en-IN";
+  const voices = window.speechSynthesis.getVoices();
+  const match = voices.find(v=>v.lang === utter.lang);
+  if(match) utter.voice = match;
+  window.speechSynthesis.cancel();
+  window.speechSynthesis.speak(utter);
+}
+
+applyTranslations();
+loadSchemesFromBackend();
+</script>
+</body>
+</html>

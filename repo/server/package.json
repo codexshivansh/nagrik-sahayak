@@ -1,0 +1,17 @@
+{
+  "name": "nagrik-sahayak-backend",
+  "version": "1.0.0",
+  "description": "Backend API serving government scheme data from Supabase for Nagrik Sahayak (Decode SIH 2026, Team OG)",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "express": "^4.19.2",
+    "cors": "^2.8.5",
+    "pg": "^8.11.5"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}
