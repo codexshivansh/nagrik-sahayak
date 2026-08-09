@@ -871,25 +871,46 @@ document.getElementById("findNearMeBtn").addEventListener("click", ()=>{
   });
 });
 
-/* ============ VOICE: SPEECH RECOGNITION (mic input) ============ */
+/* ============ VOICE: SPEECH RECOGNITION (mic input) ============
+   continuous + interimResults: without these, Chrome's SpeechRecognition
+   stops itself after the very first short pause between words/phrases,
+   cutting the user off mid-sentence. Turning both on keeps the mic open
+   across natural pauses, shows a live preview as the user talks, and only
+   fires the search once the user taps the mic again (or the 20s safety
+   cap is hit) — instead of submitting on the first fragment. */
 const SpeechRecognitionAPI = window.SpeechRecognition || window.webkitSpeechRecognition;
 let recognition = null;
 if(SpeechRecognitionAPI){
   recognition = new SpeechRecognitionAPI();
-  recognition.continuous = false;
-  recognition.interimResults = false;
+  recognition.continuous = true;
+  recognition.interimResults = true;
 }
+let micActive = false;
+let micFinalTranscript = "";
+let micTimeoutId = null;
+const MIC_MAX_DURATION_MS = 20000; // generous safety cap, not a cutoff for normal pauses
 
 document.getElementById("micBtn").addEventListener("click", ()=>{
   const micBtn = document.getElementById("micBtn");
   const micStatus = document.getElementById("micStatus");
+  const searchInput = document.getElementById("searchInput");
   micStatus.textContent = "";
   if(!recognition){
     micStatus.textContent = "Voice input isn't supported in this browser. Try Google Chrome (Brave and some privacy browsers block this feature by default).";
     return;
   }
+
+  if(micActive){
+    // second tap = "I'm done talking" — stop early instead of waiting for the cap
+    recognition.stop();
+    return;
+  }
+
+  micFinalTranscript = "";
   recognition.lang = LOCALE_MAP[currentLang] || "en-IN";
   micBtn.classList.add("listening");
+  micStatus.style.color = "";
+  micStatus.textContent = "Listening… tap the mic again when you're done.";
   try{
     recognition.start();
   }catch(e){
@@ -897,14 +918,27 @@ document.getElementById("micBtn").addEventListener("click", ()=>{
     micBtn.classList.remove("listening");
     return;
   }
+  micActive = true;
+
+  clearTimeout(micTimeoutId);
+  micTimeoutId = setTimeout(()=>{ if(micActive) recognition.stop(); }, MIC_MAX_DURATION_MS);
 
   recognition.onresult = (event)=>{
-    const transcript = event.results[0][0].transcript;
-    document.getElementById("searchInput").value = transcript;
-    document.getElementById("searchBtn").click();
+    let interim = "";
+    for(let i = event.resultIndex; i < event.results.length; i++){
+      const transcript = event.results[i][0].transcript;
+      if(event.results[i].isFinal){
+        micFinalTranscript += transcript + " ";
+      }else{
+        interim += transcript;
+      }
+    }
+    searchInput.value = (micFinalTranscript + interim).trim();
   };
   recognition.onerror = (event)=>{
+    micActive = false;
     micBtn.classList.remove("listening");
+    clearTimeout(micTimeoutId);
     const errorMessages = {
       "not-allowed": "Microphone access was blocked. Allow microphone permission for this site in your browser settings and try again.",
       "no-speech": "Didn't catch that — no speech detected. Try again.",
@@ -914,7 +948,17 @@ document.getElementById("micBtn").addEventListener("click", ()=>{
     };
     micStatus.textContent = errorMessages[event.error] || ("Voice input error: " + event.error + ". Try Google Chrome if this persists.");
   };
-  recognition.onend = ()=>{ micBtn.classList.remove("listening"); };
+  recognition.onend = ()=>{
+    micActive = false;
+    micBtn.classList.remove("listening");
+    clearTimeout(micTimeoutId);
+    const finalText = (micFinalTranscript || searchInput.value).trim();
+    if(finalText){
+      micStatus.textContent = "";
+      searchInput.value = finalText;
+      document.getElementById("searchBtn").click();
+    }
+  };
 });
 
 /* ============ VOICE: SPEECH SYNTHESIS (read aloud) ============ */
