@@ -80,6 +80,15 @@
   .field input, .field select{
     width:100%;padding:10px;border-radius:8px;border:1px solid #d3dbe4;font-size:.95rem;background:#fff;
   }
+  .field textarea{
+    width:100%;padding:10px;border-radius:8px;border:1px solid #d3dbe4;font-size:.95rem;background:#fff;
+    font-family:inherit;resize:vertical;min-height:90px;
+  }
+  .radio-row{display:flex;gap:16px;flex-wrap:wrap;margin-top:6px;}
+  .radio-row label{display:flex;align-items:center;gap:6px;font-size:.9rem;cursor:pointer;font-weight:normal;}
+  .feedback-status{margin-top:12px;padding:12px;border-radius:10px;font-weight:600;font-size:.88rem;}
+  .feedback-status.ok{background:#e6f6ea;color:var(--safe);border:1px solid #b6e6c3;}
+  .feedback-status.err{background:#fdecea;color:var(--danger);border:1px solid #f3c2bd;}
   .checkbox-row{display:flex;align-items:center;gap:8px;margin-top:6px;}
   .actions{margin-top:16px;}
   .results{margin-top:18px;display:flex;flex-direction:column;gap:14px;}
@@ -240,6 +249,25 @@
       <button class="btn-primary" id="fraudBtn">Check</button>
     </div>
     <div id="fraudResult"></div>
+  </section>
+
+  <section class="card">
+    <h3 id="feedbackHeading">💬 Feedback &amp; Feature Requests</h3>
+    <p id="feedbackSub" class="disclaimer">Tell us what's confusing, broken, or missing — we read every submission.</p>
+    <div class="radio-row">
+      <label><input type="radio" name="feedbackType" value="feedback" checked> <span id="feedbackTypeFeedbackLbl">General feedback</span></label>
+      <label><input type="radio" name="feedbackType" value="feature_request"> <span id="feedbackTypeFeatureLbl">Feature request</span></label>
+    </div>
+    <div class="field" style="margin-top:12px;">
+      <textarea id="feedbackMessageInput" placeholder="Type your feedback or feature idea..."></textarea>
+    </div>
+    <div class="field" style="margin-top:10px;">
+      <input type="text" id="feedbackNameInput" placeholder="Your name (optional)">
+    </div>
+    <div class="actions">
+      <button class="btn-primary" id="feedbackSubmitBtn">Submit</button>
+    </div>
+    <div id="feedbackStatus"></div>
   </section>
 
 </main>
@@ -478,7 +506,14 @@ const I18N = {
     aadhaarNote:"Looking for an Aadhaar enrolment/update center? Use the official UIDAI locator for verified centers.",
     aadhaarLinkLabel:"Find Aadhaar Center (UIDAI) ↗",
     permissionDeniedMsg:"Location access denied. Please allow location access in your browser to find nearby services.",
-    geoNotSupportedMsg:"Location isn't supported in this browser."
+    geoNotSupportedMsg:"Location isn't supported in this browser.",
+    feedbackHeading:"💬 Feedback & Feature Requests",
+    feedbackSub:"Tell us what's confusing, broken, or missing — we read every submission.",
+    feedbackTypeFeedback:"General feedback", feedbackTypeFeature:"Feature request",
+    feedbackMsgPh:"Type your feedback or feature idea...", feedbackNamePh:"Your name (optional)",
+    feedbackBtn:"Submit", feedbackEmptyMsg:"Please write something before submitting.",
+    feedbackThanksMsg:"Thank you! Your feedback has been submitted.",
+    feedbackErrorMsg:"Couldn't submit right now. Please try again in a moment."
   },
   hi:{
     siteTitle:"नागरिक सहायक", siteSubtitle:"डिजिटल नागरिक सहायक — Decode SIH 2026",
@@ -506,7 +541,14 @@ const I18N = {
     aadhaarNote:"आधार बनवाने/अपडेट करने का केंद्र ढूँढ रहे हैं? सत्यापित केंद्रों के लिए आधिकारिक UIDAI लोकेटर का उपयोग करें।",
     aadhaarLinkLabel:"आधार केंद्र खोजें (UIDAI) ↗",
     permissionDeniedMsg:"लोकेशन एक्सेस अस्वीकृत। आस-पास की सेवाएँ खोजने के लिए कृपया ब्राउज़र में लोकेशन एक्सेस दें।",
-    geoNotSupportedMsg:"इस ब्राउज़र में लोकेशन सुविधा उपलब्ध नहीं है।"
+    geoNotSupportedMsg:"इस ब्राउज़र में लोकेशन सुविधा उपलब्ध नहीं है।",
+    feedbackHeading:"💬 फीडबैक और फ़ीचर सुझाव",
+    feedbackSub:"हमें बताएं कि क्या भ्रमित करने वाला, खराब, या कमी है — हम हर सुझाव पढ़ते हैं।",
+    feedbackTypeFeedback:"सामान्य फीडबैक", feedbackTypeFeature:"फ़ीचर सुझाव",
+    feedbackMsgPh:"अपना फीडबैक या फ़ीचर आइडिया लिखें...", feedbackNamePh:"आपका नाम (वैकल्पिक)",
+    feedbackBtn:"भेजें", feedbackEmptyMsg:"कृपया भेजने से पहले कुछ लिखें।",
+    feedbackThanksMsg:"धन्यवाद! आपका फीडबैक भेज दिया गया है।",
+    feedbackErrorMsg:"अभी भेज नहीं सका। कृपया थोड़ी देर बाद फिर कोशिश करें।"
   },
   mr:{
     siteTitle:"नागरिक सहाय्यक", siteSubtitle:"डिजिटल नागरिक सहाय्यक — Decode SIH 2026",
@@ -534,7 +576,14 @@ const I18N = {
     aadhaarNote:"आधार नोंदणी/अपडेट केंद्र शोधत आहात? सत्यापित केंद्रांसाठी अधिकृत UIDAI लोकेटर वापरा.",
     aadhaarLinkLabel:"आधार केंद्र शोधा (UIDAI) ↗",
     permissionDeniedMsg:"लोकेशन प्रवेश नाकारला. जवळपासच्या सेवा शोधण्यासाठी कृपया ब्राउझरमध्ये लोकेशन प्रवेश द्या.",
-    geoNotSupportedMsg:"या ब्राउझरमध्ये लोकेशन सुविधा उपलब्ध नाही."
+    geoNotSupportedMsg:"या ब्राउझरमध्ये लोकेशन सुविधा उपलब्ध नाही.",
+    feedbackHeading:"💬 अभिप्राय आणि फीचर सूचना",
+    feedbackSub:"काय गोंधळात टाकणारे, तुटलेले किंवा कमी आहे ते आम्हाला सांगा — आम्ही प्रत्येक सूचना वाचतो.",
+    feedbackTypeFeedback:"सामान्य अभिप्राय", feedbackTypeFeature:"फीचर सूचना",
+    feedbackMsgPh:"तुमचा अभिप्राय किंवा फीचर कल्पना लिहा...", feedbackNamePh:"तुमचे नाव (ऐच्छिक)",
+    feedbackBtn:"पाठवा", feedbackEmptyMsg:"कृपया पाठवण्यापूर्वी काहीतरी लिहा.",
+    feedbackThanksMsg:"धन्यवाद! तुमचा अभिप्राय पाठवला गेला आहे.",
+    feedbackErrorMsg:"आत्ता पाठवता आले नाही. कृपया थोड्या वेळाने पुन्हा प्रयत्न करा."
   },
   ta:{
     siteTitle:"குடிமக்கள் உதவியாளர்", siteSubtitle:"டிஜிட்டல் குடிமக்கள் உதவியாளர் — Decode SIH 2026",
@@ -562,7 +611,14 @@ const I18N = {
     aadhaarNote:"ஆதார் பதிவு/புதுப்பிப்பு மையம் தேடுகிறீர்களா? சரிபார்க்கப்பட்ட மையங்களுக்கு அதிகாரப்பூர்வ UIDAI லொக்கேட்டரைப் பயன்படுத்தவும்.",
     aadhaarLinkLabel:"ஆதார் மையம் தேடு (UIDAI) ↗",
     permissionDeniedMsg:"இருப்பிட அணுகல் மறுக்கப்பட்டது. அருகிலுள்ள சேவைகளைக் கண்டறிய உங்கள் உலாவியில் இருப்பிட அணுகலை அனுமதிக்கவும்.",
-    geoNotSupportedMsg:"இந்த உலாவியில் இருப்பிடம் ஆதரிக்கப்படவில்லை."
+    geoNotSupportedMsg:"இந்த உலாவியில் இருப்பிடம் ஆதரிக்கப்படவில்லை.",
+    feedbackHeading:"💬 கருத்து மற்றும் அம்சக் கோரிக்கைகள்",
+    feedbackSub:"குழப்பமாக, சிதைந்ததாக அல்லது இல்லாததாக இருப்பதை எங்களிடம் சொல்லுங்கள் — ஒவ்வொரு பதிவையும் நாங்கள் படிக்கிறோம்.",
+    feedbackTypeFeedback:"பொது கருத்து", feedbackTypeFeature:"அம்சக் கோரிக்கை",
+    feedbackMsgPh:"உங்கள் கருத்து அல்லது அம்சத் திட்டத்தை தட்டச்சு செய்யவும்...", feedbackNamePh:"உங்கள் பெயர் (விருப்பத்தேர்வு)",
+    feedbackBtn:"சமர்ப்பி", feedbackEmptyMsg:"சமர்ப்பிக்கும் முன் ஏதாவது எழுதவும்.",
+    feedbackThanksMsg:"நன்றி! உங்கள் கருத்து சமர்ப்பிக்கப்பட்டது.",
+    feedbackErrorMsg:"இப்போது சமர்ப்பிக்க முடியவில்லை. சிறிது நேரம் கழித்து மீண்டும் முயற்சிக்கவும்."
   }
 };
 
@@ -599,6 +655,13 @@ function applyTranslations(){
   document.getElementById("aadhaarNote").childNodes[0].textContent = t.aadhaarNote + " ";
   document.getElementById("aadhaarLink").textContent = t.aadhaarLinkLabel;
   document.getElementById("footerText").textContent = t.footer;
+  document.getElementById("feedbackHeading").textContent = t.feedbackHeading;
+  document.getElementById("feedbackSub").textContent = t.feedbackSub;
+  document.getElementById("feedbackTypeFeedbackLbl").textContent = t.feedbackTypeFeedback;
+  document.getElementById("feedbackTypeFeatureLbl").textContent = t.feedbackTypeFeature;
+  document.getElementById("feedbackMessageInput").placeholder = t.feedbackMsgPh;
+  document.getElementById("feedbackNameInput").placeholder = t.feedbackNamePh;
+  document.getElementById("feedbackSubmitBtn").textContent = t.feedbackBtn;
   document.title = t.siteTitle + " — Decode SIH 2026";
 }
 
@@ -1036,6 +1099,41 @@ function speak(text){
   window.speechSynthesis.cancel();
   window.speechSynthesis.speak(utter);
 }
+
+/* ============ FEEDBACK / FEATURE REQUEST ============ */
+document.getElementById("feedbackSubmitBtn").addEventListener("click", async ()=>{
+  const t = I18N[currentLang];
+  const statusEl = document.getElementById("feedbackStatus");
+  const message = document.getElementById("feedbackMessageInput").value.trim();
+  const name = document.getElementById("feedbackNameInput").value.trim();
+  const type = document.querySelector('input[name="feedbackType"]:checked').value;
+
+  if(!message){
+    statusEl.className = "feedback-status err";
+    statusEl.textContent = t.feedbackEmptyMsg;
+    return;
+  }
+
+  const btn = document.getElementById("feedbackSubmitBtn");
+  btn.disabled = true;
+  try{
+    const res = await fetch(BACKEND_URL + "/api/feedback", {
+      method: "POST",
+      headers: {"Content-Type": "application/json"},
+      body: JSON.stringify({type, message, name: name || null, lang: currentLang})
+    });
+    if(!res.ok) throw new Error("bad status");
+    statusEl.className = "feedback-status ok";
+    statusEl.textContent = t.feedbackThanksMsg;
+    document.getElementById("feedbackMessageInput").value = "";
+    document.getElementById("feedbackNameInput").value = "";
+  }catch(e){
+    statusEl.className = "feedback-status err";
+    statusEl.textContent = t.feedbackErrorMsg;
+  }finally{
+    btn.disabled = false;
+  }
+});
 
 applyTranslations();
 loadSchemesFromBackend();
