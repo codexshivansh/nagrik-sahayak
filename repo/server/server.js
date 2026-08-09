@@ -46,6 +46,31 @@ app.get("/api/schemes", async (req, res) => {
   }
 });
 
+// POST /api/feedback -> stores user feedback / feature requests in Supabase.
+// Body: { type: "feedback" | "feature_request", message: string, name?: string, lang?: string }
+app.post("/api/feedback", async (req, res) => {
+  try {
+    const { type, message, name, lang } = req.body || {};
+
+    if (typeof message !== "string" || !message.trim()) {
+      return res.status(400).json({ error: "message is required" });
+    }
+    const safeType = type === "feature_request" ? "feature_request" : "feedback";
+    const safeMessage = message.trim().slice(0, 2000);
+    const safeName = typeof name === "string" && name.trim() ? name.trim().slice(0, 100) : null;
+    const safeLang = typeof lang === "string" ? lang.slice(0, 5) : null;
+
+    await pool.query(
+      "insert into feedback (type, message, name, lang) values ($1, $2, $3, $4)",
+      [safeType, safeMessage, safeName, safeLang]
+    );
+    res.status(201).json({ status: "ok" });
+  } catch (err) {
+    console.error("Error saving feedback:", err.message);
+    res.status(500).json({ error: "Failed to save feedback", detail: err.message });
+  }
+});
+
 app.listen(PORT, () => {
   console.log(`Nagrik Sahayak backend listening on port ${PORT}`);
 });
