@@ -671,16 +671,29 @@ document.getElementById("searchInput").addEventListener("keydown",(e)=>{
 });
 
 /* ============ ELIGIBILITY PROFILE MATCHER ============ */
+// SENIOR_TAGS: if the applicant is 60+, schemes explicitly built for elderly life-stage
+// (old-age pension, senior health cover, etc.) get boosted above generic ties.
+const SENIOR_TAGS = ["old age","old age pension","senior citizen","elderly","retirement","pension"];
+// Schemes whose eligible age caps out this low target a DEPENDENT (e.g. a child), not the
+// adult filling in the form. We only treat it that way when the applicant's own age is a
+// plausible parent/guardian age — an elderly applicant's own age still excludes it normally.
+const CHILD_SCHEME_MAX_AGE = 15;
+const GUARDIAN_MIN_AGE = 18, GUARDIAN_MAX_AGE = 65;
+
 function matchByProfile(profile){
   return SCHEMES.map(s=>{
     const c = s.criteria;
+    const isChildScheme = c.maxAge !== null && c.maxAge <= CHILD_SCHEME_MAX_AGE;
+    const isPlausibleGuardianAge = profile.age === null || (profile.age >= GUARDIAN_MIN_AGE && profile.age <= GUARDIAN_MAX_AGE);
+    const treatAsDependentScheme = isChildScheme && isPlausibleGuardianAge;
+
     // hard excludes
-    if(profile.age !== null){
+    if(!treatAsDependentScheme && profile.age !== null){
       if(c.minAge !== null && profile.age < c.minAge) return null;
       if(c.maxAge !== null && profile.age > c.maxAge) return null;
     }
     if(profile.income !== null && c.maxIncome !== null && profile.income > c.maxIncome) return null;
-    if(c.gender !== "any" && profile.gender !== "any" && c.gender !== profile.gender) return null;
+    if(!treatAsDependentScheme && c.gender !== "any" && profile.gender !== "any" && c.gender !== profile.gender) return null;
     if(c.disability === true && profile.disability !== true) return null;
     if(c.category === "sc_st_or_women" && profile.gender !== "female" &&
        !(profile.category === "sc" || profile.category === "st")) return null;
@@ -696,6 +709,8 @@ function matchByProfile(profile){
     if(c.disability === true && profile.disability === true) score += 3; // scheme explicitly for disability
     if((c.minAge !== null || c.maxAge !== null) && profile.age !== null) score += 1; // age-targeted scheme, and user is within range (hard-checked above)
     if(c.maxIncome !== null && profile.income !== null) score += 1; // income-targeted scheme, and user qualifies (hard-checked above)
+    if(profile.age !== null && profile.age >= 60 && s.tags.some(tag => SENIOR_TAGS.some(st => tag.includes(st)))) score += 3; // explicitly elderly-relevant scheme
+    if(treatAsDependentScheme) score += 1; // shown as a likely-relevant scheme for a dependent (child), not the applicant themself
 
     return {scheme:s, score};
   }).filter(Boolean).sort((a,b)=>b.score-a.score).map(r=>r.scheme);
